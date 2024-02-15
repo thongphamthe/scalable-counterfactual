@@ -68,6 +68,38 @@ def sliced_OT(source,target,num_projs = 100):
     
     return sliced_values, total_time/1000000.0
 
+
+def maxsw_by_sampling_OT(source,target,num_projs = 100, cores = 1):
+    import time
+    import torch
+    sliced_values = torch.zeros_like(source)
+    dim_k = source.shape[1]
+
+
+    total_time = 0.0
+
+    start = time.perf_counter_ns()
+
+    U_matrix = torch.randn(num_projs,dim_k)
+    U_matrix = torch.nn.functional.normalize(U_matrix, dim=1)
+    proj_source = torch.inner(source, U_matrix)
+    proj_target = torch.inner(target, U_matrix)
+    
+    proj_source_sorted,proj_source_indices = torch.sort(proj_source, dim = 0)
+    
+    proj_target_sorted,proj_target_indices = torch.sort(proj_target, dim = 0)
+   
+    all_dist = torch.sum(torch.abs(proj_target_sorted - proj_source_sorted),dim = 0)
+    
+    best_index = torch.argmax(all_dist)
+
+    sliced_values[proj_source_indices[:,best_index],:] = target[proj_target_indices[:,best_index],:]
+    end = time.perf_counter_ns()
+
+    total_time += (end - start)
+
+    return U_matrix[best_index,:],all_dist[best_index],sliced_values,total_time/1000000.0
+
 def single_sliced_OT(source,target,project_vector):
     import time
     import torch
