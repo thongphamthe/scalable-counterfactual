@@ -195,6 +195,38 @@ def single_sliced_OT(source,target,project_vector):
 
     return sliced_values,total_time/1000000.0
 
+def PCA_sliced_OT(source,target):
+    from sklearn.decomposition import PCA
+    import time
+    start = time.perf_counter_ns()
+
+    new_data = torch.vstack([target,source])
+    #print(source.shape)
+    #print(new_data.shape)
+    pca = PCA(n_components = 1)
+    pca.fit(new_data)
+
+
+    proj_source = torch.from_numpy(pca.transform(source).transpose())
+    proj_source = proj_source.to(torch.float)
+    #print(proj_source.shape)
+    proj_target = torch.from_numpy(pca.transform(target).transpose())
+    proj_target = proj_target.to(torch.float)
+
+    #print(proj_target.shape)
+
+    proj_source_sorted, proj_source_indices = torch.sort(proj_source)
+    proj_target_sorted, proj_target_indices = torch.sort(proj_target)
+
+    #print(proj_source_indices)
+    sliced_values = torch.zeros_like(source)
+    sliced_values[proj_source_indices, :] = target[proj_target_indices, :]
+
+    end = time.perf_counter_ns()
+    run_time_1 = (end - start) / 1000000.0
+
+    return sliced_values, run_time_1
+
 def max_sliced_OT(source,target,num_iter = 100, solver = "Adam"):
     import time
     sliced_values = torch.zeros_like(source)
@@ -255,6 +287,46 @@ def run_ot(U, V, standardize=False):
     ot_plan = ot.emd(pre_marginal, post_marginal, cost_matrix)
 
     return ot_plan
+
+
+# %%
+def analyze_OT(control_pre, control_post, treatment_pre, treatment_post):
+    # select the covariates for pre and post-intervention
+    from scipy.spatial import KDTree
+
+    #control_pre, control_post = control_df[covar_pre].to_numpy(), control_df[covar_post].to_numpy()
+    #treatment_pre, treatment_post = treatment_df[covar_pre].to_numpy(), treatment_df[covar_post].to_numpy()
+
+    control_transport_plan = run_ot(control_pre, control_post)
+
+    # use the plans to recover the pushforward of each pre-intervention unit
+    control_pushforward = np.matmul(control_transport_plan, control_post) * control_pre.shape[0]
+
+
+
+    stand_t, stand_c = treatment_pre, control_pre
+
+    # use KDTrees to look up nearest neighbors
+    # control_tree = KDTree(control_pre)
+    # treatment_tree = KDTree(treatment_pre)
+    control_tree = KDTree(stand_c)
+
+    # get the nearest neighbor in the other treatment arm for each unit we want a counterfactual for
+    # nearest_indices_t = control_tree.query(treatment_pre,k=1)[1]
+    nearest_indices_t = control_tree.query(stand_t, k=1)[1]
+    # nearest_indices_t_ite = control_tree.query(stand_t,k=1)[1]
+    # treatment_cf = control_pushforward[nearest_indices_t]
+    treatment_cf = control_pushforward[nearest_indices_t]
+
+    # ITE
+    treatment_transport_plan_effect = run_ot(treatment_post, treatment_cf)
+    print(treatment_post.shape)
+    print(treatment_cf.shape)
+    treatment_pushforward_ite = np.matmul(treatment_transport_plan_effect, treatment_cf) * treatment_cf.shape[0]
+    treatment_te_ot = treatment_post - treatment_pushforward_ite
+    # control_te_ot = control_pushforward_ite - control_cf
+
+    return treatment_te_ot, treatment_pushforward_ite
 
 def nearest_neighbor_index_finding(W,U):
     #print(W.shape)
@@ -371,6 +443,13 @@ def sliced_OT_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array, num_projs =
 
 def MSW_by_sampling_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array, num_projs = 100, num_of_points = 1):
     best_vector,best_dist,sliced_OT_value, time = maxsw_by_sampling_OT(y_00_n,y_01_n, num_projs = num_projs)
+
+    treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
+    #print(best_dist)
+    return treatment_counterfactuals,time
+
+def PCA_sliced_OT_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array):
+    sliced_OT_value, time = PCA_sliced_OT(y_00_n,y_01_n)
 
     treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
     #print(best_dist)
@@ -542,6 +621,11 @@ def plot_density_ax(ax,sample_0,sample_1,title,xtitle, ytitle,
         #plt.subplots_adjust(left=2, right=3, bottom=2, top=3)
         ax.set_aspect("equal")
 
+def plot_pmf(sample_0,sample_1,title,
+             xmin , xmax ,
+             ymin , ymax ):
+
+    print("")
 
 def emd_dist(dist1, dist2, iter = 100000000):
     # standard OT dist between two discrete distributions
@@ -721,5 +805,12 @@ def create_data_mixtureGauss(n, weight1 = 0.5, weight2 = 0.5,
     v_star_time_1 = np.array([v_star_1, v_star_2]).transpose()
 
     return v_time_0,v_time_1, v_star_time_0, v_star_time_1
+
+def run_experiment(m,n,function, cores = 1):
+    # m : number of experiments
+    # n_array : an array of number of data points in one experiment
+    #function: take n as parameters, and output two numbers: EMD and time for each method
+    #from multiprocess import Pool
+    return
 
 
