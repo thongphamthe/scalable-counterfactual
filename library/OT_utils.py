@@ -5,56 +5,30 @@ from script.library.maxsw_utils import *
 
 def marginal_1D_OT(source,target):
     import time
-    #transported_values = torch.zeros_like(source)
+   
     dim_k = source.shape[1]
 
     start = time.perf_counter_ns()
-    #print(source)
-    #print(target)
+    
     source_sorted_index = torch.argsort(source, dim = 0)
-    #print(source_sorted_index)
+    
     target_sorted_index = torch.argsort(target, dim = 0)
-    #print(target_sorted_index)
+   
     new_transported_values = torch.zeros_like(source)
     for k in range(dim_k):
-        #print(source_sorted_index[:,k])
-        #print(target_sorted_index[:,k])
         new_transported_values[source_sorted_index[:,k],k] = target[target_sorted_index[:,k],k]
 
-    #transported_values[source_sorted_index] = target[target_sorted_index]
-    #print(transported_values)
-    #print(new_transported_values)
+   
     end = time.perf_counter_ns()
 
     total_time = (end - start)
-    #print(total_time)
+    
     return new_transported_values, total_time/1000000.0 # time in miliseconds
 
-
-def marginal_1D_OT_old(source,target):
-    import time
-    transported_values = torch.zeros_like(source)
-    dim_k = source.shape[1]
-    total_time = 0.0
-    print(source)
-    print(target)
-    for k in range(dim_k):
-        start = time.perf_counter_ns()
-        proj_source_sorted = torch.argsort(source[:,k])
-        proj_target_sorted = torch.argsort(target[:,k])
-        print(proj_source_sorted)
-        print(proj_target_sorted)
-        transported_values[proj_source_sorted,k] = target[proj_target_sorted,k]
-        end = time.perf_counter_ns()
-        total_time += (end - start)
-    #print(total_time)
-    print(transported_values)
-    return transported_values, total_time/1000000.0 # time in miliseconds
-
 def full_OT(U,V,iter = 100000000, core = 1):
-    # compute OT between control pre and control_post with uniform marginals
+    
     import time
-    #print(cost_matrix.shape)
+    
     start_time = time.perf_counter_ns()
     cost_matrix = cdist(U, V, 'sqeuclidean')
     control_ot_map = ot.emd(np.ones(U.shape[0])/U.shape[0],np.ones(V.shape[0])/V.shape[0],cost_matrix,numItermax = iter, numThreads = core)
@@ -73,95 +47,26 @@ def sliced_OT(source,target,num_projs = 100):
     start = time.perf_counter_ns()
 
     U_matrix = torch.randn(num_projs, dim_k)
-    #print(U_matrix)
+    
     U_matrix = torch.nn.functional.normalize(U_matrix,dim = 1)
-    #print(U_matrix)
+    
     proj_source = torch.inner(source, U_matrix)
     proj_target = torch.inner(target, U_matrix)
-    #print(proj_source)
-    #print(proj_target)
+    
     proj_source_indices = torch.argsort(proj_source, dim=0)
-    # print(proj_source_sorted.shape)
-    #print(proj_source_indices)
+   
     proj_target_indices = torch.argsort(proj_target, dim=0)
-    #print(proj_target_indices)
+    
 
     for k in range(num_projs):
         sliced_values[proj_source_indices[:,k],:] += target[proj_target_indices[:,k],:]
 
-    #print(sliced_values.shape)
+    
     sliced_values /= num_projs
     end = time.perf_counter_ns()
     total_time = (end - start)
-    #print(sliced_values)
+    
     return sliced_values, total_time/1000000.0
-
-def sliced_OT_old(source,target,num_projs = 100):
-    #source, target: torch
-    import time
-    import torch
-    sliced_values = torch.zeros_like(source)
-    dim_k = source.shape[1]
-    print(dim_k)
-    total_time = 0.0
-    for k in range(num_projs):
-        start = time.perf_counter_ns()
-        u = torch.randn(dim_k)
-        print(u)
-        print("After nomalized:")
-        u /= torch.linalg.vector_norm(u)
-
-        print(u)
-        proj_source = torch.inner(source,u)
-        proj_target = torch.inner(target,u)
-
-        proj_source_sorted = torch.argsort(proj_source)
-        proj_target_sorted = torch.argsort(proj_target)
-        sliced_values[proj_source_sorted,:] += target[proj_target_sorted,:]
-        end = time.perf_counter_ns()
-        total_time += (end - start)
-    #print(sliced_values.shape)
-    sliced_values /= num_projs
-    print(sliced_values)
-    return sliced_values, total_time/1000000.0
-
-
-def maxsw_by_sampling_OT(source,target,num_projs = 100, cores = 1):
-    import time
-    import torch
-    sliced_values = torch.zeros_like(source)
-    dim_k = source.shape[1]
-
-
-    total_time = 0.0
-
-    start = time.perf_counter_ns()
-
-    U_matrix = torch.randn(num_projs,dim_k)
-    U_matrix = torch.nn.functional.normalize(U_matrix, dim=1)
-    proj_source = torch.inner(source, U_matrix)
-    proj_target = torch.inner(target, U_matrix)
-    #print(proj_source.shape)
-    proj_source_sorted,proj_source_indices = torch.sort(proj_source, dim = 0)
-    #print(proj_source_sorted.shape)
-    #print(proj_source_sorted)
-    proj_target_sorted,proj_target_indices = torch.sort(proj_target, dim = 0)
-    #distance = 0
-    #print(proj_target)
-    #print(proj_target_sorted)
-    #uu = proj_target[proj_target_sorted]
-    #print(uu)
-    #print(uu.shape)
-    all_dist = torch.sum(torch.abs(proj_target_sorted - proj_source_sorted),dim = 0)
-    #print(all_dist)
-    best_index = torch.argmax(all_dist)
-
-    sliced_values[proj_source_indices[:,best_index],:] = target[proj_target_indices[:,best_index],:]
-    end = time.perf_counter_ns()
-
-    total_time += (end - start)
-
-    return U_matrix[best_index,:],all_dist[best_index],sliced_values,total_time/1000000.0
 
 def single_sliced_OT(source,target,project_vector):
     import time
@@ -176,17 +81,11 @@ def single_sliced_OT(source,target,project_vector):
 
     proj_source = torch.inner(source, project_vector)
     proj_target = torch.inner(target, project_vector)
-    #print(proj_source.shape)
+    
     proj_source_sorted,proj_source_indices = torch.sort(proj_source)
-    #print(proj_source_sorted.shape)
-    #print(proj_source_sorted)
+   
     proj_target_sorted,proj_target_indices = torch.sort(proj_target)
-    #distance = 0
-    #print(proj_target)
-    #print(proj_target_sorted)
-    #uu = proj_target[proj_target_sorted]
-    #print(uu)
-    #print(uu.shape)
+   
 
     sliced_values[proj_source_indices,:] = target[proj_target_indices,:]
     end = time.perf_counter_ns()
@@ -201,24 +100,23 @@ def PCA_sliced_OT(source,target):
     start = time.perf_counter_ns()
 
     new_data = torch.vstack([target,source])
-    #print(source.shape)
-    #print(new_data.shape)
+  
     pca = PCA(n_components = 1)
     pca.fit(new_data)
 
 
     proj_source = torch.from_numpy(pca.transform(source).transpose())
     proj_source = proj_source.to(torch.float)
-    #print(proj_source.shape)
+    
     proj_target = torch.from_numpy(pca.transform(target).transpose())
     proj_target = proj_target.to(torch.float)
 
-    #print(proj_target.shape)
+    
 
     proj_source_sorted, proj_source_indices = torch.sort(proj_source)
     proj_target_sorted, proj_target_indices = torch.sort(proj_target)
 
-    #print(proj_source_indices)
+    
     sliced_values = torch.zeros_like(source)
     sliced_values[proj_source_indices, :] = target[proj_target_indices, :]
 
@@ -240,8 +138,7 @@ def max_sliced_OT(source,target,num_iter = 100, solver = "Adam"):
         exit()
 
     project_vec,proj_source_sorted_final,proj_target_sorted_final,max_dist, total_time = MaxSW(source, target, slicer,slicer_optimizer,num_iter)
-    #print(proj_source_sorted_final)
-    #print(proj_target_sorted_final)
+    
     start = time.perf_counter_ns()
     sliced_values[proj_source_sorted_final,:] = target[proj_target_sorted_final,:]
     end = time.perf_counter_ns()
@@ -257,79 +154,22 @@ def Sinkhorn_OT(source,target,iter = 100000, reg_e = 1, tol = pow(10,-5), method
     source_np = source.detach().numpy()
     target_np = target.detach().numpy()
     start = time.perf_counter_ns()
-    #print(source_np.shape)
-    #print(target_np.shape)
+    
     ot_sinkhorn = ot.da.SinkhornTransport(max_iter = iter,reg_e = reg_e,
                                           log = True, tol = tol, method = method)
     ot_sinkhorn.fit(Xs=source_np, Xt=target_np)
     transported_U = ot_sinkhorn.transform(Xs = source_np)
     end = time.perf_counter_ns()
     total_time += (end - start)
-    #print(transported_U.shape)
+    
     transported_U_torch = torch.from_numpy(transported_U)
     transported_U_torch = transported_U_torch.to(torch.float)
     return ot_sinkhorn.coupling_,transported_U_torch,total_time/1000000.0,ot_sinkhorn
 
 
-def run_ot(U, V, standardize=False):
-    N = U.shape[0]
-    M = V.shape[0]
-
-    if standardize:
-        new_U = (U - np.mean(U, axis=0)) / np.std(U, axis=0)
-        new_V = (V - np.mean(V, axis=0)) / np.std(V, axis=0)
-        U, V = new_U, new_V
-
-    pre_marginal = np.ones((N)) / N
-    post_marginal = np.ones((M)) / M
-    cost_matrix = cdist(U, V, 'sqeuclidean')
-
-    ot_plan = ot.emd(pre_marginal, post_marginal, cost_matrix)
-
-    return ot_plan
-
-
-# %%
-def analyze_OT(control_pre, control_post, treatment_pre, treatment_post):
-    # select the covariates for pre and post-intervention
-    from scipy.spatial import KDTree
-
-    #control_pre, control_post = control_df[covar_pre].to_numpy(), control_df[covar_post].to_numpy()
-    #treatment_pre, treatment_post = treatment_df[covar_pre].to_numpy(), treatment_df[covar_post].to_numpy()
-
-    control_transport_plan = run_ot(control_pre, control_post)
-
-    # use the plans to recover the pushforward of each pre-intervention unit
-    control_pushforward = np.matmul(control_transport_plan, control_post) * control_pre.shape[0]
-
-
-
-    stand_t, stand_c = treatment_pre, control_pre
-
-    # use KDTrees to look up nearest neighbors
-    # control_tree = KDTree(control_pre)
-    # treatment_tree = KDTree(treatment_pre)
-    control_tree = KDTree(stand_c)
-
-    # get the nearest neighbor in the other treatment arm for each unit we want a counterfactual for
-    # nearest_indices_t = control_tree.query(treatment_pre,k=1)[1]
-    nearest_indices_t = control_tree.query(stand_t, k=1)[1]
-    # nearest_indices_t_ite = control_tree.query(stand_t,k=1)[1]
-    # treatment_cf = control_pushforward[nearest_indices_t]
-    treatment_cf = control_pushforward[nearest_indices_t]
-
-    # ITE
-    treatment_transport_plan_effect = run_ot(treatment_post, treatment_cf)
-    print(treatment_post.shape)
-    print(treatment_cf.shape)
-    treatment_pushforward_ite = np.matmul(treatment_transport_plan_effect, treatment_cf) * treatment_cf.shape[0]
-    treatment_te_ot = treatment_post - treatment_pushforward_ite
-    # control_te_ot = control_pushforward_ite - control_cf
-
-    return treatment_te_ot, treatment_pushforward_ite
 
 def nearest_neighbor_index_finding(W,U):
-    #print(W.shape)
+    
     index_array = np.zeros(W.shape[0])
     for w_index, unit in enumerate(W):
         absolute_differences = torch.subtract(U,unit)
@@ -340,80 +180,8 @@ def nearest_neighbor_index_finding(W,U):
     return index_array
 
 def nn_interpolation(W_shape,transported_U,index_array):
-    #counterfactual_outcomes = torch.empty(W_shape)
+    
     counterfactual_outcomes = transported_U[index_array,:]
-    return counterfactual_outcomes
-
-def CiC_mapping(control_pre, treatment_pre, transported_control):
-    #control_pre : n x d, treatment_pre: n x d
-    # for each row of treatment_pre: substract the matrix control_pre by that row
-    # then look for the index of the biggest value that not
-    counterfactual_outcomes = torch.empty(treatment_pre.shape)
-    #sorted_control_pre = torch.sort(control_pre,dim = 0)
-    for i in range(treatment_pre.shape[0]):
-        for j in range(treatment_pre.shape[1]):
-            temp = [value.item() - treatment_pre[i,j].item() for value in control_pre[:,j]]
-            #print(temp)
-            temp = np.array(temp)
-            #print(temp)
-            choose_index = np.where(temp <= 0)
-            choose_index = np.array(choose_index).flatten()
-
-            if len(choose_index) > 0:
-                vec_temp = temp[temp <= 0]
-                min_index = np.argwhere(vec_temp == np.amax(vec_temp))
-            else:
-                choose_index = np.where(temp >= 0)
-                choose_index = np.array(choose_index).flatten()
-                vec_temp = temp[temp >= 0]
-                min_index = np.argwhere(vec_temp == np.amin(vec_temp))
-            #print(min_index.flatten())
-            #print(greater_than_zero_index)
-            min_index = np.array(min_index.flatten(), dtype = "int32")
-
-            min_index = choose_index[min_index]
-            #print(transported_control.shape)
-            if len(min_index) > 1:
-            #print(transported_control[min_index, j])
-            #print(transported_control[min_index,j].detach().numpy)
-                cf_value = torch.amax(transported_control[min_index,j])
-            else:
-                cf_value = transported_control[min_index, j].item()
-            #print(vec_temp)
-            #print(min_index)
-            #print(transported_control[min_index,j].clone().detach())
-            #print(cf_value)
-            counterfactual_outcomes[i,j] = cf_value
-    return counterfactual_outcomes
-
-def nearest_neighbor_interpolation_old(W,U,transported_U, base_vector = None, num_of_point = 1):
-    # calculate counterfactual treatments by finding nearest control and transporting
-    counterfactual_outcomes = torch.empty(W.shape)
-    W_project = W
-    U_project = U
-    transported_U_project = transported_U
-    #print("Start here")
-    #print(transported_U.shape)
-    if base_vector is not None:
-        W_project = torch.inner(W,base_vector)
-        U_project = torch.inner(U,base_vector)
-        transported_U_project = torch.inner(transported_U,base_vector)
-    #print(transported_U_project.shape)
-    #print(W.shape)
-    #print(transported_U.shape)
-    for w_index, unit in enumerate(W_project):
-        absolute_differences = torch.subtract(U_project,unit)
-        distances = torch.norm(absolute_differences, dim = -1)
-        #print(distances.shape)
-        closest_index = np.argsort(distances)[:num_of_point]
-        #print(closest_index)
-        #print(transported_U[closest_index,:])
-        #print(np.mean(transported_U[closest_index,:],axis = 0))
-        if base_vector is not None:
-            counterfactual_outcomes[w_index, :] = torch.mean(transported_U_project[closest_index], 0)
-        else:
-            counterfactual_outcomes[w_index,:] = torch.mean(transported_U_project[closest_index,:],0)
-
     return counterfactual_outcomes
 
 def marginal_OT_causal_estimate(y_00_n, y_01_n,y_10_n,nn_index_array):
@@ -430,7 +198,7 @@ def full_OT_causal_estimate(y_00_n, y_01_n,y_10_n,nn_index_array, iter = 1000000
 def Sinkhorn_causal_estimate(y_00_n, y_01_n,y_10_n,nn_index_array,
                              iter = 100000,reg_e = 1, tol = pow(10,-3), method = "sinkhorn_log"):
     control_ot_map, transported_U, time, ot_sinkhorn = Sinkhorn_OT(y_00_n,y_01_n, iter = iter, reg_e = reg_e,tol = tol,method = method)
-    #print(transported_U)
+    
     treatment_np = y_10_n.detach().numpy()
     treatment_counterfactuals_transformed =  ot_sinkhorn.transform(treatment_np)
     treatment_counterfactuals_ot = nn_interpolation(y_10_n.shape,transported_U,nn_index_array)
@@ -445,14 +213,14 @@ def MSW_by_sampling_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array, num_p
     best_vector,best_dist,sliced_OT_value, time = maxsw_by_sampling_OT(y_00_n,y_01_n, num_projs = num_projs)
 
     treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
-    #print(best_dist)
+    
     return treatment_counterfactuals,time
 
 def PCA_sliced_OT_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array):
     sliced_OT_value, time = PCA_sliced_OT(y_00_n,y_01_n)
 
     treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
-    #print(best_dist)
+    
     return treatment_counterfactuals,time
 
 
@@ -460,53 +228,14 @@ def MSW_by_sampling_causal_estimate_for_experiments(y_00_n, y_01_n,y_10_n, nn_in
     best_vector,best_dist,sliced_OT_value, time = maxsw_by_sampling_OT_increaments(y_00_n,y_01_n, num_proj_array)
 
     treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
-    #print(best_dist)
+    
     return treatment_counterfactuals,time
-def maxsw_by_sampling_OT_increaments(source,target,num_projs_array):
-    # num_projs_array: an increasing list of number of projections
-
-    import time
-    import torch
-    sliced_values = torch.zeros_like(source)
-    dim_k = source.shape[1]
-
-
-    total_time = 0.0
-
-    start = time.perf_counter_ns()
-
-    U_matrix = torch.randn(num_projs,dim_k)
-    U_matrix = torch.nn.functional.normalize(U_matrix, dim=1)
-    proj_source = torch.inner(source, U_matrix)
-    proj_target = torch.inner(target, U_matrix)
-    #print(proj_source.shape)
-    proj_source_sorted,proj_source_indices = torch.sort(proj_source, dim = 0)
-    #print(proj_source_sorted.shape)
-    #print(proj_source_sorted)
-    proj_target_sorted,proj_target_indices = torch.sort(proj_target, dim = 0)
-    #distance = 0
-    #print(proj_target)
-    #print(proj_target_sorted)
-    #uu = proj_target[proj_target_sorted]
-    #print(uu)
-    #print(uu.shape)
-    all_dist = torch.sum(torch.abs(proj_target_sorted - proj_source_sorted),dim = 0)
-    #print(all_dist)
-    best_index = torch.argmax(all_dist)
-
-    sliced_values[proj_source_indices[:,best_index],:] = target[proj_target_indices[:,best_index],:]
-    end = time.perf_counter_ns()
-
-    total_time += (end - start)
-
-    return U_matrix[best_index,:],all_dist[best_index],sliced_values,total_time/1000000.0
-
 
 def single_sliced_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array, project_vector):
     sliced_OT_value, time = single_sliced_OT(y_00_n,y_01_n, project_vector)
 
     treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
-    #print(best_dist)
+    
     return treatment_counterfactuals,time
 
 
@@ -514,9 +243,6 @@ def MSW_by_optimization_causal_estimate(y_00_n, y_01_n,y_10_n, nn_index_array, n
     _,_,sliced_OT_value,time = max_sliced_OT(y_00_n,y_01_n, num_iter=num_iter)
     treatment_counterfactuals = nn_interpolation(y_10_n.shape,sliced_OT_value,nn_index_array)
     return treatment_counterfactuals, time
-
-#this is the optimization
-
 
 
 def plot_density(sample_0,sample_1,title,
@@ -621,11 +347,6 @@ def plot_density_ax(ax,sample_0,sample_1,title,xtitle, ytitle,
         #plt.subplots_adjust(left=2, right=3, bottom=2, top=3)
         ax.set_aspect("equal")
 
-def plot_pmf(sample_0,sample_1,title,
-             xmin , xmax ,
-             ymin , ymax ):
-
-    print("")
 
 def emd_dist(dist1, dist2, iter = 100000000):
     # standard OT dist between two discrete distributions
@@ -693,53 +414,6 @@ def one_experiment(a,b,c,y_11_N_true,nn_index_array,
         else:
             print("Not implemented method")
     return result
-
-
-
-def get_cdf(outcomes):
-    print(outcomes)
-    # calculate the eCDF of a list of data
-    # adapted from: https://stackoverflow.com/questions/24788200/calculate-the-cumulative-distribution-function-cdf-in-python
-    sorted_outcomes = sorted(outcomes)
-    values, counts = np.unique(sorted_outcomes,return_counts=True) # get unique values and their occurences
-    sums = np.cumsum(counts) # get cumulative count up to each value and rescale for quantile
-    quantiles = sums / sums[-1]
-    return values, quantiles
-
-def closest(list_, value, left=True):
-  # helper function to get cdf values
-  # given a list and a value, returns the closest element in the list (less/greater) than or equal to the value parameter
-    if left:
-        masked = [i if i <= value else -np.inf for i in list_]
-        return max(masked)
-    else:
-        masked = [i if i >= value else np.inf for i in list_]
-        return min(masked)
-
-def nan_cic(treatment_pre,control_pre,control_post,verbose=False):
-    # calculate the changes-in-changes estimator for both control and treatment group
-    # return NaN if prediction if unit is outside support of other treatment arm
-
-    # get the empirical CDFs of all observed groups
-    control_pre_cdf = get_cdf(control_pre)
-    control_post_cdf = get_cdf(control_post)
-    treatment_pre_cdf = get_cdf(treatment_pre)
-
-    # For each control pre-intervention, get the outcome quantile if it were a treated pre-intervention
-    treatment_cf_pre_matches = [closest(control_pre_cdf[0],value) for value in treatment_pre]
-    treatment_cf_pre_quantiles = [control_pre_cdf[1][np.where(control_pre_cdf[0]==new_value)[0][0]] if np.isfinite(new_value) else np.nan for new_value in treatment_cf_pre_matches]
-    # Determine the post-intervention treatment value associated with each quantile found above
-    treatment_cf_post_quantiles = [closest(control_post_cdf[1],quantile,left=False) for quantile in treatment_cf_pre_quantiles]
-    treatment_cf = [control_post_cdf[0][np.where(control_post_cdf[1]==new_quantile)[0][0]] if np.isfinite(new_quantile) else np.nan for new_quantile in treatment_cf_post_quantiles]
-
-    return treatment_cf
-
-def full_bivariate_cic(treatment_pre,control_pre,control_post):
-    # get coordinate-wise CiC estimates
-    first_coordinate_counterfactuals = nan_cic(treatment_pre[:,0],control_pre[:,0],control_post[:,0])
-    second_coordinate_counterfactuals = nan_cic(treatment_pre[:,1],control_pre[:,1],control_post[:,1])
-    cic_results = np.vstack((first_coordinate_counterfactuals,second_coordinate_counterfactuals)).T
-    return cic_results
 
 def create_data_gamma(n, a1 = 1, scale1 = 1, a2 = 1, scale2 = 1,
                       a3 = 1, scale3 = 1, a4 = 1, scale4 = 1):
