@@ -286,14 +286,14 @@ def plot_density(sample_0,sample_1,title,
     import scipy.stats as st
     import matplotlib.pyplot as plt
     plt.rcParams['text.usetex'] = True
-    #plt.tight_layout()
+    
     import scienceplots
     plt.style.use(['science'])
     with plt.style.context(['science', 'ieee']):
-        #plt.tight_layout()
+        
         xx, yy = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
         positions = np.vstack([xx.ravel(), yy.ravel()])
-    #values = np.vstack([y_11_N_true[0], y_11_N_true[1]])
+   
         values = np.vstack([sample_0, sample_1])
         kernel = st.gaussian_kde(values)
         f = np.reshape(kernel(positions).T, xx.shape)
@@ -303,8 +303,7 @@ def plot_density(sample_0,sample_1,title,
 
     # Contourf plot
         cfset = ax.contourf(xx, yy, f, cmap='Greys')
-        #ax.set_xlabel(r'$Y_0$',fontsize = x_size)
-        #ax.set_ylabel(r'$Y_1$', fontsize = y_size)
+        
         ax.set_xlabel("First dimension", fontsize=x_size)
         ax.set_ylabel("Second dimension", fontsize = y_size)
         plt.title(title)
@@ -320,7 +319,7 @@ def plot_density(sample_0,sample_1,title,
             plt.yticks(ticks=yticks, labels=yticks)
         ax.set_xlim((xmin, xmax))
         ax.set_ylim((ymin, ymax))
-        #plt.subplots_adjust(left=2, right=3, bottom=2, top=3)
+        
         ax.set_aspect("equal")
         if tight:
             plt.tight_layout()
@@ -336,27 +335,25 @@ def plot_density_ax(ax,sample_0,sample_1,title,xtitle, ytitle,
     import scipy.stats as st
     import matplotlib.pyplot as plt
     plt.rcParams['text.usetex'] = True
-    #plt.tight_layout()
+    
     import scienceplots
     with plt.style.context(['science', 'ieee']):
-        #plt.tight_layout()
+        
         xx, yy = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
         positions = np.vstack([xx.ravel(), yy.ravel()])
-    #values = np.vstack([y_11_N_true[0], y_11_N_true[1]])
+   
         values = np.vstack([sample_0, sample_1])
         kernel = st.gaussian_kde(values)
         f = np.reshape(kernel(positions).T, xx.shape)
-        #fig = plt.figure()
-        #ax = fig.gca()
+        
 
 
     # Contourf plot
         cfset = ax.contourf(xx, yy, f, cmap='Blues')
-        #ax.set_xlabel(r'$Y_0$',fontsize = x_size)
-        #ax.set_ylabel(r'$Y_1$', fontsize = y_size)
+        
         ax.set_xlabel(xlabel, fontsize = x_size)
         ax.set_ylabel(ylabel, fontsize = y_size)
-        #ax.title.set_text(title)
+        
         ax.text(xtitle,ytitle,title,fontsize = x_size,transform=ax.transAxes,ha = "left",verticalalignment='center')
         if x_size is not None:
             xticklabels = ax.get_xticklabels()
@@ -376,7 +373,7 @@ def plot_density_ax(ax,sample_0,sample_1,title,xtitle, ytitle,
             ax.set_yticklabels(labels = "")
         ax.set_xlim((xmin, xmax))
         ax.set_ylim((ymin, ymax))
-        #plt.subplots_adjust(left=2, right=3, bottom=2, top=3)
+       
         ax.set_aspect("equal")
 
 
@@ -512,11 +509,5 @@ def create_data_mixtureGauss(n, weight1 = 0.5, weight2 = 0.5,
 
     return v_time_0,v_time_1, v_star_time_0, v_star_time_1
 
-def run_experiment(m,n,function, cores = 1):
-    # m : number of experiments
-    # n_array : an array of number of data points in one experiment
-    #function: take n as parameters, and output two numbers: EMD and time for each method
-    #from multiprocess import Pool
-    return
 
 
