@@ -58,24 +58,19 @@ def MaxSW(X, Y, slicer,slicer_optimizer,num_iter):
     Xdetach=X.detach()
     Ydetach=Y.detach()
     total_time = 0
-    #print(num_iter)
+    
     for i in range(num_iter):
-        #print(i)
+        
         start = time.perf_counter_ns()
         outX= slicer(Xdetach)
         outY= slicer(Ydetach)
-        #print(outX.shape)
-        #print(outY.shape)
-        #print(outX)
-        #print(outY)
+        
 
         proj_source_sorted = torch.argsort(outX,dim = 0)
         proj_target_sorted = torch.argsort(outY, dim = 0)
-        #print(proj_source_sorted)
-        #print(outY[proj_target_sorted])
-        #print("reach here!")
+        
         negativehsw = -1*torch.sum(torch.abs(outY[proj_target_sorted] - outX[proj_source_sorted]))
-        #print(negativehsw)
+       
         slicer_optimizer.zero_grad()
         negativehsw.backward()
         slicer_optimizer.step()
@@ -87,10 +82,10 @@ def MaxSW(X, Y, slicer,slicer_optimizer,num_iter):
     outY = slicer(Y)
 
     proj_source_sorted = torch.argsort(outX,dim = 0)
-    #print(proj_source_sorted)
+    
 
     proj_target_sorted = torch.argsort(outY,dim = 0)
-    #print(proj_target_sorted)
+    
     for U in slicer.U_list.modules():
         if isinstance(U, nn.Linear):
             project_vec = U.weight
@@ -112,10 +107,9 @@ def one_dimensional_Wasserstein_prod(X_prod,Y_prod,p):
 def one_dimensional_Wasserstein(X,Y,theta):
     X_prod = torch.matmul(X, theta)
     Y_prod = torch.matmul(Y, theta)
-    #print(X_prod)
+    
     proj_source_sorted = torch.argsort(X_prod, dim=0)
-    #print(proj_source_sorted)
-    #print(X_prod[proj_source_sorted])
+   
     proj_target_sorted = torch.argsort(Y_prod, dim=0)
 
     wasserstein_distance= torch.sum(torch.abs(Y_prod[proj_target_sorted] - X_prod[proj_source_sorted]))
