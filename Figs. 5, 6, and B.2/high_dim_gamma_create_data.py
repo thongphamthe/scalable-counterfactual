@@ -22,11 +22,7 @@ def create_data(dim):
     B = np.diag(np.random.rand(dim))
     h_1 = solve(h_0.transpose(), B)
 
-    #print(h_0)
-    #print(h_1)
-
-
-    #np.all(np.linalg.eigvals(np.inner(h_0.transpose(),h_1)) > 0)
+   
 
     time_dict = {}
     emd_dict = {}
