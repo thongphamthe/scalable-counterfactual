@@ -42,14 +42,7 @@ def run_one_experiment(num_sample):
 
             m = dill.load(file=f)
             alpha = dill.load(file=f)
-            #a1 = dill.load(file=f)
-            #scale1 = dill.load(file=f)
-            #a2 = dill.load(file=f)
-            #scale2 = dill.load(file=f)
-            #a3 = dill.load(file=f)
-            #scale3 = dill.load(file=f)
-            #a4 = dill.load(file=f)
-            #scale4 = dill.load(file=f)
+           
             y_00_N = dill.load(file=f)
             y_01_N = dill.load(file=f)
             y_10_N = dill.load(file=f)
