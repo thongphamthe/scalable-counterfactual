@@ -21,7 +21,7 @@ with open("./result_file/" + "high_dim_" + data + ".pkl", 'rb') as file:
 
 number_of_repeat = 10
 dim_array = [2,10,50,100]
-#dim_array = [100]
+
 
 run_vector = ["full","CiC","maxSW_sampling","sinkhorn"]
 
@@ -62,16 +62,6 @@ for d in range(len(dim_array)):
             sd_array_emd[d][i] = np.std(values_emd)
         else: # case of sinkhorn
 
-            # 10:
-            #values_time = np.zeros((number_of_repeat))
-            #values_emd = np.zeros((number_of_repeat))
-            #for use_m in range(number_of_repeat):
-            #    values_time[use_m] = result[dim_array[d]][use_m][0][run_vector[i]][10][0]  # choose the number of projections as 10
-            #    values_emd[use_m] = result[dim_array[d]][use_m][1][run_vector[i]][10][0]  # choose the number of projections as 10
-            #mean_array[d][i] = np.mean(values_time)
-            #sd_array[d][i] = np.std(values_time)
-            #mean_array_emd[d][i] = np.mean(values_emd)
-            #sd_array_emd[d][i] = np.std(values_emd)
 
             # 30:
             values_time = np.zeros((number_of_repeat))
@@ -84,16 +74,6 @@ for d in range(len(dim_array)):
             mean_array_emd[d][i] = np.mean(values_emd)
             sd_array_emd[d][i] = np.std(values_emd)
 
-            # 90:
-            #values_time = np.zeros((number_of_repeat))
-            #values_emd = np.zeros((number_of_repeat))
-            #for use_m in range(number_of_repeat):
-            #    values_time[use_m] = result[dim_array[d]][use_m][0][run_vector[i]][90][0]  # choose the number of projections as 10
-            #    values_emd[use_m] = result[dim_array[d]][use_m][1][run_vector[i]][90][0]  # choose the number of projections as 10
-            #mean_array[d][i + 2] = np.mean(values_time)
-            #sd_array[d][i + 2] = np.std(values_time)
-            #mean_array_emd[d][i + 2] = np.mean(values_emd)
-            #sd_array_emd[d][i + 2] = np.std(values_emd)
 
 
 
@@ -130,14 +110,10 @@ with plt.style.context(['science', 'ieee']):
             ax[0][0].plot([dim_array[i], dim_array[i]], [upper[i], lower[i]],color=color_vec[p], linestyle = "solid")
             ax[0][0].plot([dim_array[i] - width, dim_array[i] + width], [upper[i], upper[i]],color=color_vec[p], linestyle = "solid")
             ax[0][0].plot([dim_array[i] - width, dim_array[i] + width], [lower[i], lower[i]],color=color_vec[p], linestyle = "solid")
-    #ax.legend(title='Method')
+   
     ax[0][0].legend = None
     ax[0][0].set_xticks(x_time_ticks)
-    #pos = ax.get_position()
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method', loc='center right',
-    #          fontsize='small', bbox_to_anchor=(1.65, 0.5))
-    #ax.autoscale(tight=True)
+ 
     ax[0][0].set(**pparam_time)
     ax[0][0].set_yscale('log')
     xticklabels = ax[0][0].get_xticklabels()
@@ -146,12 +122,10 @@ with plt.style.context(['science', 'ieee']):
     ax[0][0].set_ylabel("Running time (in ms)", fontsize=font_size)
     ax[0][0].set_xticklabels(xticklabels, fontsize=font_size)
     ax[0][0].set_yticklabels(yticklabels, fontsize=font_size)
-    #fig.savefig(data + '_time.png',dpi = 200)
-    #fig.tight_layout()
-    #fig.show()
+  
 
 with plt.style.context(['science', 'ieee']):
-    #fig, ax = plt.subplots()
+    
     for p in range(len(label_array)):
         ax[0][1].plot(dim_array, mean_array_emd[:, p], label=label_array[p], marker=marker_array[p],
                 markersize=4,color = color_vec[p])
@@ -162,11 +136,7 @@ with plt.style.context(['science', 'ieee']):
             ax[0][1].plot([dim_array[i] - width, dim_array[i] + width], [upper[i], upper[i]], color=color_vec[p], linestyle = "solid")
             ax[0][1].plot([dim_array[i] - width, dim_array[i] + width], [lower[i], lower[i]], color=color_vec[p], linestyle = "solid")
     pos = ax[0][1].get_position()
-    #ax.legend(title='', fontsize = 16)
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method',loc='center right',
-    #          fontsize='small',bbox_to_anchor=(1.65, 0.5))
-    # ax.autoscale(tight=True)
+
     ax[0][1].set(**pparam_emd)
     ax[0][1].set_yscale('log')
     ax[0][1].legend = None
@@ -178,21 +148,17 @@ with plt.style.context(['science', 'ieee']):
     ax[0][1].set_xticklabels(xticklabels, fontsize=font_size)
     ax[0][1].set_yticklabels(yticklabels, fontsize=font_size)
 
-    #fig.savefig(data + '_emd.pdf')
-    #fig.savefig("./images/"+ data + '_emd.png',dpi = 600)
 
 
 fig.subplots_adjust(bottom=0.5)
-#plt.subplots_adjust(hspace = 0.5)
+
 ax[1].legend(handles = line_list,
-              labels = label_array,# marker = marker_array,
-               #color = color_vec,
-               #bbox_to_anchor=(0.015,-0.02),
+              labels = label_array,
                fontsize = font_size,
                loc = "center",ncol = 6)
-#fig.tight_layout()
+
 fig.show()
 fig.savefig("./images/manuscript/varying_dimmension_gamma.png",dpi = 600)
-#fig.savefig('figures/fig2c.jpg', dpi=300)
+
 
 
