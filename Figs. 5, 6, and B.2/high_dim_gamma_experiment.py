@@ -16,7 +16,7 @@ dim_array = [2,10,50,100]
 num_iter_array = [1,5,10,25,50,100,200]
 
 sinkhorn_parameter = [10,30,90]
-#num_iter_array = [1,2]
+
 
 run_vector = ["full","CiC","maxSW_sampling","maxSW_adam","SW","sinkhorn"]
 
