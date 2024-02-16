@@ -95,18 +95,14 @@ with plt.style.context(['science', 'ieee']):
                 ax[d][0].plot([num_iter_array[i], num_iter_array[i]], [upper[i], lower[i]],color=color_vec[p], linestyle = "solid")
                 ax[d][0].plot([num_iter_array[i] * width, num_iter_array[i] / width], [upper[i], upper[i]],color=color_vec[p], linestyle = "solid")
                 ax[d][0].plot([num_iter_array[i] * width, num_iter_array[i] / width], [lower[i], lower[i]],color=color_vec[p], linestyle = "solid")
-    #ax.legend(title='Method')
+    
 
 
 
         ax[d][0].set_xticks(num_iter_array)
-    #pos = ax.get_position()
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method', loc='center right',
-    #          fontsize='small', bbox_to_anchor=(1.65, 0.5))
-    #ax.autoscale(tight=True)
+   
         ax[d][0].set(**pparam_time)
-        #ax[d][0].set_yscale('log')
+        
         ax[d][0].set_xscale('log')
         xticklabels = ax[d][0].get_xticklabels()
         yticklabels = ax[d][0].get_yticklabels()
@@ -120,7 +116,7 @@ with plt.style.context(['science', 'ieee']):
         for p in range(len(label_array)):
             temp_fig = ax[d][1].plot(num_iter_array, mean_array_emd[d, :, p], label=label_array[p],
                                      marker=marker_array[p], markersize=4, color=color_vec[p])[0]
-            #line_list.append(temp_fig)
+           
             upper = mean_array_emd[d, :, p] + 2 * sd_array_emd[d, :, p]
             lower = mean_array_emd[d, :, p] - 2 * sd_array_emd[d, :, p]
             for i in range(len(num_iter_array)):
@@ -130,17 +126,13 @@ with plt.style.context(['science', 'ieee']):
                               color=color_vec[p], linestyle="solid")
                 ax[d][1].plot([num_iter_array[i] * width, num_iter_array[i] / width], [lower[i], lower[i]],
                               color=color_vec[p], linestyle="solid")
-        # ax.legend(title='Method')
+        
 
         ax[d][1].legend = None
         ax[d][1].set_xticks(num_iter_array)
-        # pos = ax.get_position()
-        # ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-        # ax.legend(title='Method', loc='center right',
-        #          fontsize='small', bbox_to_anchor=(1.65, 0.5))
-        # ax.autoscale(tight=True)
+       
         ax[d][1].set(**pparam_time)
-        # ax[d][0].set_yscale('log')
+        
         ax[d][1].set_xscale('log')
         xticklabels = ax[d][0].get_xticklabels()
         yticklabels = ax[d][0].get_yticklabels()
@@ -150,10 +142,9 @@ with plt.style.context(['science', 'ieee']):
         ax[d][1].set_xticklabels(xticklabels, fontsize=font_size)
         ax[d][1].set_yticklabels(yticklabels, fontsize=font_size)
 
-#fig.subplots_adjust(bottom=0.5)
+
 ax[2].legend(handles = line_list,
-            labels=label_array,  # marker = marker_array,
-             #color = color_vec,
+            labels=label_array,  
               bbox_to_anchor=(-0.8,0.75),
                fontsize=font_size,
                loc="center left", ncol=1)
