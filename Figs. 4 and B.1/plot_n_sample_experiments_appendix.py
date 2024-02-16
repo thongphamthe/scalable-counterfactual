@@ -77,10 +77,7 @@ for n in range(len(n_array)):
             temp_time.append(result[n][j][choose[i]][0]) # time
             temp_emd.append(result[n][j][choose[i]][1])  # emd
 
-        #mean_array[n,i]  = np.mean(np.log10(temp_time))
-        #sd_array[n,i]    = np.std(np.log10(temp_time))
-        #mean_array_emd[n, i] = np.mean(np.log10(temp_emd))
-        #sd_array_emd[n, i]   = np.std(np.log10(temp_emd))
+       
         mean_array[n,i]  = np.mean(temp_time)
         sd_array[n,i]    = np.std(temp_time)
         mean_array_emd[n, i] = np.mean(temp_emd)
@@ -99,14 +96,10 @@ with plt.style.context(['science', 'ieee']):
             ax[0][0].plot([n_array[i], n_array[i]], [upper[i], lower[i]],color=color_vec[p], linestyle = "solid")
             ax[0][0].plot([n_array[i] - width, n_array[i] + width], [upper[i], upper[i]],color=color_vec[p], linestyle = "solid")
             ax[0][0].plot([n_array[i] - width, n_array[i] + width], [lower[i], lower[i]],color=color_vec[p], linestyle = "solid")
-    #ax.legend(title='Method')
+   
     ax[0][0].legend = None
     ax[0][0].set_xticks(x_time_ticks)
-    #pos = ax.get_position()
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method', loc='center right',
-    #          fontsize='small', bbox_to_anchor=(1.65, 0.5))
-    #ax.autoscale(tight=True)
+   
     ax[0][0].set(**pparam_time)
     ax[0][0].set_yscale('log')
     xticklabels = ax[0][0].get_xticklabels()
@@ -129,11 +122,7 @@ with plt.style.context(['science', 'ieee']):
             ax[0][1].plot([n_array[i] - width, n_array[i] + width], [upper[i], upper[i]], color=color_vec[p], linestyle = "solid")
             ax[0][1].plot([n_array[i] - width, n_array[i] + width], [lower[i], lower[i]], color=color_vec[p], linestyle = "solid")
     pos = ax[0][1].get_position()
-    #ax.legend(title='', fontsize = 16)
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method',loc='center right',
-    #          fontsize='small',bbox_to_anchor=(1.65, 0.5))
-    # ax.autoscale(tight=True)
+  
     ax[0][1].set(**pparam_emd)
     ax[0][1].set_yscale('log')
     ax[0][1].legend = None
@@ -145,8 +134,7 @@ with plt.style.context(['science', 'ieee']):
     ax[0][1].set_xticklabels(xticklabels, fontsize=xlabel_size)
     ax[0][1].set_yticklabels(yticklabels, fontsize=font_size)
 
-    #fig.savefig(data + '_emd.pdf')
-    #fig.savefig("./images/"+ data + '_emd.png',dpi = 600)
+   
 
 
 
@@ -169,10 +157,7 @@ for n in range(len(n_array)):
             temp_time.append(result[n][j][choose[i]][0]) # time
             temp_emd.append(result[n][j][choose[i]][1])  # emd
 
-        #mean_array[n,i]  = np.mean(np.log10(temp_time))
-        #sd_array[n,i]    = np.std(np.log10(temp_time))
-        #mean_array_emd[n, i] = np.mean(np.log10(temp_emd))
-        #sd_array_emd[n, i]   = np.std(np.log10(temp_emd))
+      
         mean_array[n,i]  = np.mean(temp_time)
         sd_array[n,i]    = np.std(temp_time)
         mean_array_emd[n, i] = np.mean(temp_emd)
@@ -199,14 +184,10 @@ with plt.style.context(['science', 'ieee']):
             ax[1][0].plot([n_array[i], n_array[i]], [upper[i], lower[i]],color=color_vec[p], linestyle = "solid")
             ax[1][0].plot([n_array[i] - width, n_array[i] + width], [upper[i], upper[i]],color=color_vec[p], linestyle = "solid")
             ax[1][0].plot([n_array[i] - width, n_array[i] + width], [lower[i], lower[i]],color=color_vec[p], linestyle = "solid")
-    #ax.legend(title='Method')
+   
     ax[1][0].legend = None
     ax[1][0].set_xticks(x_time_ticks)
-    #pos = ax.get_position()
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method', loc='center right',
-    #          fontsize='small', bbox_to_anchor=(1.65, 0.5))
-    #ax.autoscale(tight=True)
+  
     ax[1][0].set(**pparam_time)
     ax[1][0].set_yscale('log')
     xticklabels = ax[1][0].get_xticklabels()
@@ -215,12 +196,9 @@ with plt.style.context(['science', 'ieee']):
     ax[1][0].set_ylabel("Running time (in ms)", fontsize=font_size)
     ax[1][0].set_xticklabels(xticklabels, fontsize=xlabel_size)
     ax[1][0].set_yticklabels(yticklabels, fontsize=font_size)
-    #fig.savefig(data + '_time.png',dpi = 200)
-    #fig.tight_layout()
-    #fig.show()
+  
 
 with plt.style.context(['science', 'ieee']):
-    #fig, ax = plt.subplots()
     for p in range(len(choose)):
         ax[1][1].plot(n_array, mean_array_emd[:, p], label=label_array[p], marker=marker_array[p],
                 markersize=4,color = color_vec[p])
@@ -231,11 +209,7 @@ with plt.style.context(['science', 'ieee']):
             ax[1][1].plot([n_array[i] - width, n_array[i] + width], [upper[i], upper[i]], color=color_vec[p], linestyle = "solid")
             ax[1][1].plot([n_array[i] - width, n_array[i] + width], [lower[i], lower[i]], color=color_vec[p], linestyle = "solid")
     pos = ax[1][1].get_position()
-    #ax.legend(title='', fontsize = 16)
-    #ax.set_position([pos.x0, pos.y0, pos.width * 0.7, pos.height])
-    #ax.legend(title='Method',loc='center right',
-    #          fontsize='small',bbox_to_anchor=(1.65, 0.5))
-    # ax.autoscale(tight=True)
+ 
     ax[1][1].set(**pparam_emd)
     ax[1][1].set_yscale('log')
     ax[1][1].legend = None
@@ -253,5 +227,5 @@ ax[2].legend(handles = line_list, labels = label_array,
 
 fig.show()
 fig.savefig("./images/manuscript/varying_n_appendix.png",dpi = 600)
-#fig.savefig('figures/fig2c.jpg', dpi=300)
+
 
