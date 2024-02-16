@@ -171,9 +171,9 @@ fig, ax = plt.subplots(1,3,
                        sharey=False
                        )
 
-#ax[0].scatter(diff_full_OT[:,0],diff_full_OT[:,1])
+
 ax[0].scatter(full_OT_counterfactual[:,0],full_OT_counterfactual[:,1],size)
-#ax[0].set_aspect('equal')
+
 ax[0].set_xlim([min_x,max_x])
 ax[0].set_ylim([min_y,max_y])
 ax[0].set_xlabel("Full-time",fontsize = font_size)
@@ -217,6 +217,6 @@ plt.subplots_adjust(left=0,
                     bottom=0.2,
                     right=1,
                     top=0.9,hspace = 0,wspace = 0)
-#fig.tight_layout()
+
 fig.show()
 fig.savefig("./images/manuscript/CK_result.png",dpi = 600)
